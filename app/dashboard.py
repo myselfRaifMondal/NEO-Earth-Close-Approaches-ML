@@ -1,9 +1,11 @@
+# main.py
+
 import streamlit as st
 import plotly.express as px
 import pandas as pd
 from datetime import datetime
 
-# Config
+# Page config
 st.set_page_config(page_title="NEOvision ☄️", layout="wide")
 
 # Title
@@ -12,7 +14,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Load Data
+# Load data
 data = pd.read_csv("data/neo_predictions.csv")
 data["cd"] = pd.to_datetime(data["cd"])
 
@@ -50,7 +52,7 @@ col1.metric("🪐 Total NEOs", len(filtered_df))
 col2.metric("☢️ Hazardous", filtered_df["is_hazardous_prediction"].sum())
 col3.metric("📅 Date Range", f"{start_date.date()} to {end_date.date()}")
 
-# Timeline
+# Timeline Plot
 st.subheader("📅 NEO Approaches Timeline")
 timeline_data = filtered_df.copy()
 
@@ -65,7 +67,6 @@ if timeline_type == "Daily":
         markers=True,
         labels={"value": "NEO Count", "variable": "Metric"}
     )
-
 else:
     timeline_data["week"] = timeline_data["cd"].dt.to_period("W").dt.start_time
     weekly_count = timeline_data.groupby("week").size().reset_index(name="NEO Count")
@@ -78,7 +79,7 @@ else:
 with st.expander("📅 View NEO Timeline", expanded=True):
     st.plotly_chart(fig_timeline, use_container_width=True)
 
-# Scatter Plot
+# Distance vs Diameter
 st.subheader("📏 Distance vs Diameter")
 fig_scatter = px.scatter(
     filtered_df,
@@ -91,7 +92,7 @@ fig_scatter = px.scatter(
 with st.expander("📏 View Scatterplot", expanded=False):
     st.plotly_chart(fig_scatter, use_container_width=True)
 
-# Pie Chart
+# Hazardous Prediction Pie
 st.subheader("🧪 Hazardous Prediction Split")
 hazard_counts = filtered_df["is_hazardous_prediction"].value_counts().rename({1: "Hazardous", 0: "Non-Hazardous"}).reset_index()
 hazard_counts.columns = ["Prediction", "Count"]
@@ -112,7 +113,7 @@ st.dataframe(
     use_container_width=True
 )
 
-# Additional Visualizations
+# Distance Over Time
 st.subheader("📡 Close Approach Distance vs Time")
 fig1 = px.scatter(
     filtered_df,
@@ -124,6 +125,7 @@ fig1 = px.scatter(
 )
 st.plotly_chart(fig1, use_container_width=True)
 
+# Velocity Over Time
 st.subheader("🚀 Relative Velocity Over Time")
 fig2 = px.line(
     filtered_df.sort_values("cd"),

@@ -1,88 +1,97 @@
 # dashboard.py
 
 import streamlit as st
-import plotly.express as px
 import pandas as pd
-from datetime import datetime
+import plotly.express as px
+import seaborn as sns
+import matplotlib.pyplot as plt
 
-# Page config
-st.set_page_config(page_title="NEOvision ☄️", layout="wide")
+# --- Page Setup ---
+st.set_page_config(page_title="NEOvision AI 🚀", layout="wide")
 
-# Title
 st.markdown(
-    "<h1 style='text-align: center; color: #F63366;'>🌌 NEOvision: Near-Earth Object Tracker ☄️</h1>",
+    "<h1 style='text-align: center; color: #FF4B4B;'>🤖 NEOvision AI - ML-Classified Hazardous NEOs</h1>",
     unsafe_allow_html=True
 )
 
-# Load Data
-data = pd.read_csv("../data/neos_labeled.csv")
+st.markdown("""
+Welcome to **NEOvision AI**, a dashboard that simulates Machine Learning–based classification of Near-Earth Objects (NEOs) using NASA's approach data.
+Here, `hazardous` is treated as a predicted label by a trained ML model.
+""")
 
-# Convert 'cd' (close-approach date) to datetime
-data["cd"] = pd.to_datetime(data["cd"])
+# --- Load Data ---
+df = pd.read_csv("../data/neos_labeled.csv")
+df["cd"] = pd.to_datetime(df["cd"])  # Convert approach date
 
-# Sidebar Filters
-st.sidebar.header("🔍 Filter NEO Data")
+# --- Sidebar Filters ---
+st.sidebar.header("🔍 Filter Options")
 
-# Date Range Filter
-min_date = data["cd"].min()
-max_date = data["cd"].max()
-
-date_range = st.sidebar.date_input("Date Range", [min_date, max_date])
+# Date Filter
+date_range = st.sidebar.date_input(
+    "Approach Date Range",
+    [df["cd"].min(), df["cd"].max()]
+)
 start_date, end_date = pd.to_datetime(date_range[0]), pd.to_datetime(date_range[1])
+filtered_df = df[(df["cd"] >= start_date) & (df["cd"] <= end_date)]
 
-# Filter data based on date range
-data = data[(data["cd"] >= start_date) & (data["cd"] <= end_date)]
+# Hazard Filter
+hazard_filter = st.sidebar.selectbox(
+    "Filter by Hazard Status",
+    ["All", "Hazardous", "Not Hazardous"]
+)
 
-# Distance Filter
-max_distance = st.sidebar.slider("Max Distance (AU)", float(data["dist"].min()), float(data["dist"].max()), 0.05)
-data = data[data["dist"] <= max_distance]
+if hazard_filter == "Hazardous":
+    filtered_df = filtered_df[filtered_df["hazardous"] == True]
+elif hazard_filter == "Not Hazardous":
+    filtered_df = filtered_df[filtered_df["hazardous"] == False]
 
-# Diameter Filter
-min_diameter = st.sidebar.slider("Min Diameter (km)", float(data["diameter"].min()), float(data["diameter"].max()), 0.1)
-data = data[data["diameter"] >= min_diameter]
+# --- Overview ---
+st.markdown("### 🧠 Classified NEOs Overview")
+st.dataframe(filtered_df.head(50), use_container_width=True)
 
-# Hazardous Filter
-hazard_filter = st.sidebar.selectbox("Show Only Hazardous?", ["All", "Yes", "No"])
-if hazard_filter == "Yes":
-    data = data[data["hazardous"] == True]
-elif hazard_filter == "No":
-    data = data[data["hazardous"] == False]
+# --- Metrics ---
+total_neos = len(filtered_df)
+haz_count = filtered_df["hazardous"].sum()
+nonhaz_count = total_neos - haz_count
+haz_pct = (haz_count / total_neos) * 100 if total_neos > 0 else 0
 
-# Column Selector
-st.markdown("### 📋 View Custom Columns")
-columns_to_display = st.multiselect("Select columns to display", options=data.columns, default=data.columns)
-st.dataframe(data[columns_to_display], use_container_width=True)
+col1, col2, col3 = st.columns(3)
+col1.metric("☄️ Total NEOs", total_neos)
+col2.metric("🚨 Hazardous", haz_count)
+col3.metric("🟢 % Hazardous", f"{haz_pct:.2f}%")
 
-# Charts Section
-st.markdown("### 📊 Key Visualizations")
+# --- Visualizations ---
+st.markdown("### 📊 Visual Insights")
 
-col1, col2 = st.columns(2)
+# Hazard Distribution
+fig1 = px.pie(filtered_df, names="hazardous", title="Hazardous vs Non-Hazardous NEOs")
+st.plotly_chart(fig1, use_container_width=True)
+
+# Velocity vs Diameter
+if {"v_rel", "diameter"}.issubset(filtered_df.columns):
+    fig2 = px.scatter(
+        filtered_df, x="v_rel", y="diameter", color="hazardous",
+        title="Velocity vs Diameter (Hazardous Coloring)",
+        labels={"v_rel": "Relative Velocity (km/s)", "diameter": "Estimated Diameter (km)"},
+        hover_data=["fullname", "cd"]
+    )
+    st.plotly_chart(fig2, use_container_width=True)
 
 # Risk Level Distribution
-with col1:
-    if "risk_level" in data.columns:
-        fig_risk = px.histogram(data, x="risk_level", title="Risk Level Distribution", color="risk_level")
-        st.plotly_chart(fig_risk, use_container_width=True)
+if "risk_level" in filtered_df.columns:
+    fig3 = px.histogram(
+        filtered_df, x="risk_level", color="hazardous",
+        barmode="group", title="Risk Level Distribution by Hazard Status"
+    )
+    st.plotly_chart(fig3, use_container_width=True)
 
-# Velocity vs Diameter Scatter
-with col2:
-    if {"v_rel", "diameter"}.issubset(data.columns):
-        fig_vel_dia = px.scatter(data, x="v_rel", y="diameter", color="risk_level",
-                                 title="Relative Velocity vs Diameter", hover_data=["fullname"])
-        st.plotly_chart(fig_vel_dia, use_container_width=True)
+# --- Full Table ---
+with st.expander("📚 View Full Dataset"):
+    st.dataframe(filtered_df, use_container_width=True)
 
-# Timeline of Approaches
-if "cd" in data.columns:
-    st.markdown("### 📆 NEO Timeline")
-    data["date_only"] = data["cd"].dt.date
-    timeline = data.groupby("date_only").size().reset_index(name="count")
-    fig_timeline = px.line(timeline, x="date_only", y="count", title="Number of NEO Approaches Over Time")
-    st.plotly_chart(fig_timeline, use_container_width=True)
-
-# Expandable Full Data Viewer
-with st.expander("🔎 View Full NEO Dataset"):
-    st.dataframe(data, use_container_width=True)
-
-# Footer
+# --- Footer ---
 st.markdown("<hr>", unsafe_allow_html=True)
-st.markdown("Made with ❤️ using Streamlit and Plotly | Dataset: NEOs Labeled CSV", unsafe_allow_html=True)
+st.markdown(
+    "<p style='text-align: center;'>🚀 Built with Streamlit & Plotly | Simulated ML Classification | Data Source: neos_labeled.csv</p>",
+    unsafe_allow_html=True
+)

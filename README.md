@@ -92,8 +92,8 @@ hazardous is typically defined by NASA as any object that comes within 0.05 AU a
 ### 📁 Example:
 
 ```csv
-cd,fullname,dist,diameter,v_rel,is_hazardous_prediction
-2029-04-13 21:46,99942 Apophis,0.000254,0.34,7.42,1
+des,orbit_id,jd,cd,dist,dist_min,dist_max,v_rel,v_inf,t_sigma_f,h,diameter,diameter_sigma,fullname,days_until_approach,risk_level,hazardous
+509352,57,2415024.433789572,1900-01-04 22:25:00,0.0096318386169879,0.0096249478918661,0.00963873093215,0.20103115950940506,8.65480697513416,00:02,0.3179916317991631,,,509352 (2007 AG),-45810,close,0
 ```
 ## ▶️ Getting Started
 

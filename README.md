@@ -19,11 +19,13 @@ NEOvision is an interactive dashboard built with **Streamlit** and powered by **
 
 ## 📂 File Structure
 NEO-EARTH-CLOSE-APPROACHES-ML
+```
 ├── app.py # Streamlit dashboard
 ├── data/
 │ └── neo_predictions.csv # ML predictions + NEO info
 ├── requirements.txt # Python dependencies
 └── README.md # This file
+```
 
 
 ---

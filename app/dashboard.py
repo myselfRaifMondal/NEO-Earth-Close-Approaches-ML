@@ -10,10 +10,10 @@ import calendar
 import numpy as np
 
 # --- Page Setup ---
-st.set_page_config(page_title="NEOvision AI 🚀", layout="wide")
+st.set_page_config(page_title="NEOvision AI", layout="wide")
 
 st.markdown(
-    "<h1 style='text-align: center; color: #FF4B4B;'>🤖 NEOvision AI - ML-Classified Hazardous NEOs</h1>",
+    "<h1 style='text-align: center; color: #FF4B4B;'>NEOvision AI - ML-Classified Hazardous NEOs</h1>",
     unsafe_allow_html=True
 )
 
@@ -49,7 +49,7 @@ elif hazard_filter == "Not Hazardous":
     filtered_df = filtered_df[filtered_df["hazardous"] == False]
 
 # --- Overview ---
-st.markdown("### 🧠 Classified NEOs Overview")
+st.markdown("### Classified NEOs Overview")
 st.dataframe(filtered_df.head(50), use_container_width=True)
 
 # --- Metrics ---
@@ -64,7 +64,7 @@ col2.metric("🚨 Hazardous", haz_count)
 col3.metric("🟢 % Hazardous", f"{haz_pct:.2f}%")
 
 # --- Visual Insights ---
-st.markdown("### 📊 Visual Insights")
+st.markdown("### Visual Insights")
 
 # 📈 Line Chart: cd vs diameter
 line_df = filtered_df.sort_values("cd")
@@ -88,14 +88,14 @@ fig_scatter = px.scatter(
 st.plotly_chart(fig_scatter, use_container_width=True)
 
 # 🧊 Correlation Heatmap
-st.markdown("#### 🔥 Correlation Heatmap")
+st.markdown("#### Correlation Heatmap")
 corr = filtered_df[["v_rel", "dist", "diameter"]].corr()
 fig, ax = plt.subplots()
 sns.heatmap(corr, annot=True, cmap="coolwarm", ax=ax)
 st.pyplot(fig)
 
 # 🔄 KDE/Violin Plot
-st.markdown("#### 🔍 Diameter Distribution by Hazard Status")
+st.markdown("#### Diameter Distribution by Hazard Status")
 fig_violin = px.violin(filtered_df, y="diameter", x="hazardous", box=True, points="all",
                        title="Diameter Distribution by Hazard Status")
 st.plotly_chart(fig_violin, use_container_width=True)
@@ -107,7 +107,7 @@ if "risk_level" in filtered_df.columns:
     st.plotly_chart(fig_risk, use_container_width=True)
 
 # 🧮 Count Plot: hazardous by bins of dist, v_rel, diameter
-st.markdown("#### 📊 Hazard Count by Binned Features")
+st.markdown("#### Hazard Count by Binned Features")
 for feature in ["dist", "v_rel", "diameter"]:
     binned = pd.cut(filtered_df[feature], bins=5)
     filtered_df[f"{feature}_bin"] = binned.astype(str)
@@ -118,7 +118,7 @@ for feature in ["dist", "v_rel", "diameter"]:
     st.plotly_chart(fig_count, use_container_width=True)
 
 # 📅 Calendar Heatmap of hazardous count per day
-st.markdown("#### 📅 Calendar Heatmap of Hazardous NEO Approaches")
+st.markdown("#### Calendar Heatmap of Hazardous NEO Approaches")
 haz_df = filtered_df[filtered_df["hazardous"] == True]
 haz_df["date"] = haz_df["cd"].dt.date
 haz_df["day"] = haz_df["cd"].dt.day

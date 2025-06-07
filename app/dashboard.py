@@ -109,9 +109,12 @@ if "risk_level" in filtered_df.columns:
 # 🧮 Count Plot: hazardous by bins of dist, v_rel, diameter
 st.markdown("#### 📊 Hazard Count by Binned Features")
 for feature in ["dist", "v_rel", "diameter"]:
-    filtered_df[f"{feature}_bin"] = pd.cut(filtered_df[feature], bins=5)
-    fig_count = px.histogram(filtered_df, x=f"{feature}_bin", color="hazardous",
-                             title=f"Hazard Status by {feature.capitalize()} Bins", barmode="group")
+    binned = pd.cut(filtered_df[feature], bins=5)
+    filtered_df[f"{feature}_bin"] = binned.astype(str)
+    fig_count = px.histogram(
+        filtered_df, x=f"{feature}_bin", color="hazardous",
+        title=f"Hazard Status by {feature.capitalize()} Bins", barmode="group"
+    )
     st.plotly_chart(fig_count, use_container_width=True)
 
 # 📅 Calendar Heatmap of hazardous count per day

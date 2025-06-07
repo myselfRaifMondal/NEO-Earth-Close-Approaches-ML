@@ -132,8 +132,8 @@ The model was trained using historical NASA NEO data and cross-validated for rel
 ## ✨ Authors
 
 Built with ❤️ by:
-- Raif Mondal
-- Syed Rafat Halim
+- Raif Mondal [@myselfRaifMondal](https://github.com/myselfRaifMondal)
+- Syed Rafat Halim [@rafat09](https://github.com/rafat09)
 
 🔗 Powered by:
 - NASA/JPL SBDB Close-Approach API

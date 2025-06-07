@@ -48,11 +48,13 @@ Example:
 ```csv
 cd,fullname,dist,diameter,v_rel,is_hazardous_prediction
 2029-04-13 21:46,99942 Apophis,0.000254,0.34,7.42,1
-
+```
 ## ▶️ Run the App
 
+```
 pip install -r requirements.txt
 streamlit run app.py
+```
 
 ## ✨ Authors
 

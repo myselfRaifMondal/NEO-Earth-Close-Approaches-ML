@@ -1,0 +1,3 @@
+def predict_live_neo_events(model_path="models/neo_classifier.pkl"):
+    ...
+    return processed_df[['des', 'cd', 'dist', 'diameter', 'hazard_prediction']]

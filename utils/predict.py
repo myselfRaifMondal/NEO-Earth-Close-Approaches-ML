@@ -1,35 +1,47 @@
+# utils/fetch_data.py
+
 import requests
 import pandas as pd
-from datetime import datetime, timedelta
-import joblib
 
-# 1. Fetch data
-today = datetime.now().strftime('%Y-%m-%d')
-end_date = (datetime.now() + timedelta(days=60)).strftime('%Y-%m-%d')
+def fetch_neo_data(start_date, end_date):
+    params = {
+        'body': 'Earth',
+        'date-min': start_date,
+        'date-max': end_date,
+        'neo': 'true',
+        'diameter': 'true',
+        'fullname': 'true'
+    }
+    url = 'https://ssd-api.jpl.nasa.gov/cad.api'
+    response = requests.get(url, params=params)
+    data = response.json()
+    
+    # Use fields key for column names
+    columns = data['fields']  # list of strings
+    df = pd.DataFrame(data['data'], columns=columns)
+    
+    return df
+# utils/predict.py (snippet)
 
-params = {
-    'body': 'Earth',
-    'date-min': today,
-    'date-max': end_date,
-    'neo': 'true',
-    'diameter': 'true',
-    'fullname': 'true'
-}
+def preprocess(df):
+    # Make sure columns are strings and lowercase
+    df.columns = [col.lower() for col in df.columns]
 
-response = requests.get('https://ssd-api.jpl.nasa.gov/cad.api', params=params)
-data = response.json()
+    # Continue with your preprocessing code, e.g.
+    # convert date column to datetime
+    df['cd'] = pd.to_datetime(df['cd'], errors='coerce')
 
-# 2. Convert and preprocess (similar steps as before)
-df = pd.json_normalize(data['data'], sep='_')
-# Rename columns, parse dates, handle missing, create features, normalize etc.
+    # Feature engineering, etc.
 
-# 3. Load model
-model = joblib.load('models/neo_classifier.pkl')
+    return df
 
-# 4. Predict hazard
-X_new = df[feature_columns]  # make sure features are in correct order
-predictions = model.predict(X_new)
-df['hazardous'] = predictions
 
-# 5. Save results
-df.to_csv('data/upcoming_neo_predictions.csv', index=False)
+if __name__ == "__main__":
+    # Example usage
+    from fetch_data import fetch_neo_data
+
+    df = fetch_neo_data('1900-01-01', '2100-01-01')
+    df = preprocess(df)
+    
+    # continue with prediction logic...
+

@@ -12,14 +12,15 @@ def fetch_neo_data(start_date='1900-01-01', end_date='2100-01-01', save_dir='dat
         "fullname": "true",
         "date-min": start_date,
         "date-max": end_date,
-        "sort": "cd",
+        "sort": "date",
         "limit": 100000  # You can adjust this if the API restricts it
     }
 
     # Call API
     response = requests.get(url, params=params)
     data = response.json()
-
+    
+    
     # Ensure directory exists
     os.makedirs(save_dir, exist_ok=True)
 

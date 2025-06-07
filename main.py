@@ -1,4 +1,2 @@
-if True:
-    print("hello world")
-else:
-    print("goodbye world")
+from fetch_data import fetch_neo_data
+print(fetch_neo_data())

@@ -53,6 +53,48 @@ col1.metric("🪐 Total NEOs", len(filtered_df))
 col2.metric("☢️ Hazardous", filtered_df["is_hazardous_prediction"].sum())
 col3.metric("📅 Date Range", f"{start_date.date()} to {end_date.date()}")
 
+st.subheader("📅 NEO Approaches Timeline")
+
+timeline_data = filtered_df.copy()
+timeline_data["date"] = timeline_data["cd"].dt.date
+
+timeline_count = timeline_data.groupby("date").size().reset_index(name="NEO Count")
+
+fig_timeline = px.line(
+    timeline_count, x="date", y="NEO Count",
+    title="Number of NEO Approaches Over Time",
+    markers=True
+)
+st.plotly_chart(fig_timeline, use_container_width=True)
+
+st.subheader("📏 Distance vs Diameter")
+
+fig_scatter = px.scatter(
+    filtered_df,
+    x="dist", y="diameter",
+    color=filtered_df["is_hazardous_prediction"].map({1: "Hazardous", 0: "Non-Hazardous"}),
+    hover_data=["fullname", "cd"],
+    title="Asteroid Distance vs Diameter (AU vs KM)",
+    labels={"diameter": "Diameter (km)", "dist": "Distance (AU)", "color": "Hazardous"}
+)
+
+st.plotly_chart(fig_scatter, use_container_width=True)
+
+st.subheader("🧪 Hazardous Prediction Split")
+
+hazard_counts = filtered_df["is_hazardous_prediction"].value_counts().rename({1: "Hazardous", 0: "Non-Hazardous"}).reset_index()
+hazard_counts.columns = ["Prediction", "Count"]
+
+fig_pie = px.pie(
+    hazard_counts,
+    names="Prediction", values="Count",
+    title="Hazardous vs Non-Hazardous NEOs",
+    color="Prediction",
+    color_discrete_map={"Hazardous": "crimson", "Non-Hazardous": "royalblue"}
+)
+st.plotly_chart(fig_pie, use_container_width=True)
+
+
 
 st.subheader("🛰️ Filtered NEO Data")
 st.dataframe(

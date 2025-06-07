@@ -51,8 +51,10 @@ cd,fullname,dist,diameter,v_rel,is_hazardous_prediction
 ```
 ## ▶️ Run the App
 
+```
 pip install -r requirements.txt
 streamlit run app.py
+```
 
 ## ✨ Authors
 

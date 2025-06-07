@@ -3,11 +3,13 @@ import plotly.express as px
 from datetime import datetime
 
 
-st.set_page_config(page_title="NEOvision 🌍☄️", layout="wide")
-st.title("🚀 NEOvision – Near-Earth Object Tracker")
-st.markdown("""
-Track and visualize near-Earth asteroids and comets approaching Earth, powered by [NASA SBDB API](https://ssd-api.jpl.nasa.gov/doc/cad.html) and ML predictions.  
-""")
+st.set_page_config(page_title="NEOvision ☄️", layout="wide")
+
+st.markdown(
+    "<h1 style='text-align: center; color: #F63366;'>🌌 NEOvision: Near-Earth Object Tracker ☄️</h1>",
+    unsafe_allow_html=True
+)
+
 
 import pandas as pd
 
@@ -65,6 +67,22 @@ fig_timeline = px.line(
     title="Number of NEO Approaches Over Time",
     markers=True
 )
+
+with st.expander("📅 View Timeline of NEO Approaches", expanded=True):
+    st.plotly_chart(fig_timeline, use_container_width=True)
+
+with st.expander("📏 View Distance vs Diameter Scatterplot", expanded=False):
+    st.plotly_chart(fig_scatter, use_container_width=True)
+
+with st.expander("☢️ View Hazardous Prediction Split", expanded=False):
+    st.plotly_chart(fig_pie, use_container_width=True)
+
+with st.expander("📄 View Filtered NEO Table", expanded=False):
+    st.dataframe(
+        filtered_df[["cd", "fullname", "dist", "diameter", "v_rel", "is_hazardous_prediction"]],
+        use_container_width=True
+    )
+
 st.plotly_chart(fig_timeline, use_container_width=True)
 
 st.subheader("📏 Distance vs Diameter")

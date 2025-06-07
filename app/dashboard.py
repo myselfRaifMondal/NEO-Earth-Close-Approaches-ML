@@ -5,6 +5,9 @@ import pandas as pd
 import plotly.express as px
 import seaborn as sns
 import matplotlib.pyplot as plt
+import seaborn as sns
+import calendar
+import numpy as np
 
 # --- Page Setup ---
 st.set_page_config(page_title="NEOvision AI 🚀", layout="wide")
@@ -21,7 +24,7 @@ Here, `hazardous` is treated as a predicted label by a trained ML model.
 
 # --- Load Data ---
 df = pd.read_csv("../data/neos_labeled.csv")
-df["cd"] = pd.to_datetime(df["cd"])  # Convert approach date
+df["cd"] = pd.to_datetime(df["cd"])
 
 # --- Sidebar Filters ---
 st.sidebar.header("🔍 Filter Options")
@@ -60,38 +63,67 @@ col1.metric("☄️ Total NEOs", total_neos)
 col2.metric("🚨 Hazardous", haz_count)
 col3.metric("🟢 % Hazardous", f"{haz_pct:.2f}%")
 
-# --- Visualizations ---
+# --- Visual Insights ---
 st.markdown("### 📊 Visual Insights")
 
-# Hazard Distribution
-fig1 = px.pie(filtered_df, names="hazardous", title="Hazardous vs Non-Hazardous NEOs")
-st.plotly_chart(fig1, use_container_width=True)
+# 📈 Line Chart: cd vs diameter
+line_df = filtered_df.sort_values("cd")
+fig_line = px.line(line_df, x="cd", y="diameter", title="NEO Diameters Over Time")
+st.plotly_chart(fig_line, use_container_width=True)
 
-# Velocity vs Diameter
-if {"v_rel", "diameter"}.issubset(filtered_df.columns):
-    fig2 = px.scatter(
-        filtered_df, x="v_rel", y="diameter", color="hazardous",
-        title="Velocity vs Diameter (Hazardous Coloring)",
-        labels={"v_rel": "Relative Velocity (km/s)", "diameter": "Estimated Diameter (km)"},
-        hover_data=["fullname", "cd"]
-    )
-    st.plotly_chart(fig2, use_container_width=True)
+# 📊 Histogram: dist, v_rel, diameter
+st.markdown("#### Histograms of Key Features")
+cols = st.columns(3)
+for col, feat in zip(cols, ["dist", "v_rel", "diameter"]):
+    with col:
+        fig = px.histogram(filtered_df, x=feat, nbins=40, title=f"Distribution of {feat}")
+        st.plotly_chart(fig, use_container_width=True)
 
-# Risk Level Distribution
-if "risk_level" in filtered_df.columns:
-    fig3 = px.histogram(
-        filtered_df, x="risk_level", color="hazardous",
-        barmode="group", title="Risk Level Distribution by Hazard Status"
-    )
-    st.plotly_chart(fig3, use_container_width=True)
-
-# --- Full Table ---
-with st.expander("📚 View Full Dataset"):
-    st.dataframe(filtered_df, use_container_width=True)
-
-# --- Footer ---
-st.markdown("<hr>", unsafe_allow_html=True)
-st.markdown(
-    "<p style='text-align: center;'>🚀 Built with Streamlit & Plotly | Simulated ML Classification | Data Source: neos_labeled.csv</p>",
-    unsafe_allow_html=True
+# 🔵 Scatter Plot: v_rel vs dist colored by hazardous
+fig_scatter = px.scatter(
+    filtered_df, x="v_rel", y="dist", color="hazardous",
+    title="Velocity vs Distance Colored by Hazard Status",
+    labels={"v_rel": "Relative Velocity (km/s)", "dist": "Miss Distance (LD)"}
 )
+st.plotly_chart(fig_scatter, use_container_width=True)
+
+# 🧊 Correlation Heatmap
+st.markdown("#### 🔥 Correlation Heatmap")
+corr = filtered_df[["v_rel", "dist", "diameter"]].corr()
+fig, ax = plt.subplots()
+sns.heatmap(corr, annot=True, cmap="coolwarm", ax=ax)
+st.pyplot(fig)
+
+# 🔄 KDE/Violin Plot
+st.markdown("#### 🔍 Diameter Distribution by Hazard Status")
+fig_violin = px.violin(filtered_df, y="diameter", x="hazardous", box=True, points="all",
+                       title="Diameter Distribution by Hazard Status")
+st.plotly_chart(fig_violin, use_container_width=True)
+
+# ⚠️ Risk Level vs Hazardous (if 'risk_level' exists)
+if "risk_level" in filtered_df.columns:
+    fig_risk = px.histogram(filtered_df, x="risk_level", color="hazardous",
+                            title="Risk Level by Hazardous Classification", barmode="group")
+    st.plotly_chart(fig_risk, use_container_width=True)
+
+# 🧮 Count Plot: hazardous by bins of dist, v_rel, diameter
+st.markdown("#### 📊 Hazard Count by Binned Features")
+for feature in ["dist", "v_rel", "diameter"]:
+    filtered_df[f"{feature}_bin"] = pd.cut(filtered_df[feature], bins=5)
+    fig_count = px.histogram(filtered_df, x=f"{feature}_bin", color="hazardous",
+                             title=f"Hazard Status by {feature.capitalize()} Bins", barmode="group")
+    st.plotly_chart(fig_count, use_container_width=True)
+
+# 📅 Calendar Heatmap of hazardous count per day
+st.markdown("#### 📅 Calendar Heatmap of Hazardous NEO Approaches")
+haz_df = filtered_df[filtered_df["hazardous"] == True]
+haz_counts = haz_df["cd"].dt.date.value_counts().sort_index()
+haz_calendar = pd.DataFrame({"date": haz_counts.index, "count": haz_counts.values})
+haz_calendar["date"] = pd.to_datetime(haz_calendar["date"])
+haz_calendar["day"] = haz_calendar["date"].dt.day
+haz_calendar["month"] = haz_calendar["date"].dt.month_name().str[:3]
+heatmap_data = haz_calendar.pivot(index="month", columns="day", values="count")
+fig, ax = plt.subplots(figsize=(12, 5))
+sns.heatmap(heatmap_data, cmap="Reds", linewidths=0.5, linecolor='gray', annot=True, fmt=".0f")
+plt.title("Hazardous NEO Counts by Date")
+st.pyplot(fig)

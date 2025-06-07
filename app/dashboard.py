@@ -120,12 +120,20 @@ for feature in ["dist", "v_rel", "diameter"]:
 # 📅 Calendar Heatmap of hazardous count per day
 st.markdown("#### 📅 Calendar Heatmap of Hazardous NEO Approaches")
 haz_df = filtered_df[filtered_df["hazardous"] == True]
-haz_counts = haz_df["cd"].dt.date.value_counts().sort_index()
-haz_calendar = pd.DataFrame({"date": haz_counts.index, "count": haz_counts.values})
-haz_calendar["date"] = pd.to_datetime(haz_calendar["date"])
-haz_calendar["day"] = haz_calendar["date"].dt.day
-haz_calendar["month"] = haz_calendar["date"].dt.month_name().str[:3]
-heatmap_data = haz_calendar.pivot(index="month", columns="day", values="count")
+haz_df["date"] = haz_df["cd"].dt.date
+haz_df["day"] = haz_df["cd"].dt.day
+haz_df["month"] = haz_df["cd"].dt.month_name().str[:3]
+
+# Group to remove duplicates
+heatmap_data = (
+    haz_df.groupby(["month", "day"])
+    .size()
+    .reset_index(name="count")
+    .pivot(index="month", columns="day", values="count")
+)
+month_order = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+               "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+heatmap_data = heatmap_data.reindex(month_order)
 fig, ax = plt.subplots(figsize=(12, 5))
 sns.heatmap(heatmap_data, cmap="Reds", linewidths=0.5, linecolor='gray', annot=True, fmt=".0f")
 plt.title("Hazardous NEO Counts by Date")

@@ -129,6 +129,10 @@ The is_hazardous_prediction column in neos_labeled.csv is produced by a custom M
 
 The model was trained using historical NASA NEO data and cross-validated for reliability.
 
+## Future Updates
+
+Currently, the project displays the results of our inferences made while predicting the dataset we fetched by our side, will be updating this project with a real-time classification one.
+
 ## ✨ Authors
 
 Built with ❤️ by:

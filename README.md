@@ -41,9 +41,7 @@ NEO-EARTH-CLOSE-APPROACHES-ML/
 │   └── neo_classifier.pkl        # Machine Learning Model
 ├── notebooks/
 │   ├── explorations.ipynb    # Exploratory Data Analysis
-│   ├── feature_engineering.ipynb    # Feature Engineering
-│   ├── historical.ipynb    # Fetching and Saving Historical Data
-│   └── ml_modeling.ipynb    # ML Modeling Script
+│   └── historical.ipynb    # Fetching and Saving Historical Data
 ├── utils/
 │   ├── fetch_data.py    # Fetching Real Time data from the API
 │   ├── load_model_and_predict.py    # Model Predictions

@@ -141,6 +141,10 @@ Built with ❤️ by:
 - NASA/JPL SBDB Close-Approach API
 - Custom-Trained ML classification pipeline
 
+## 📄 License
+
+This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
+
 ## 📬 Feedback & Contributions
 
 Have suggestions, ideas, or bugs to report?
